@@ -30,23 +30,23 @@
 	@SuppressWarnings("serial")
 	public class ConnectFrame extends JFrame implements ActionListener, KeyListener {
 		private Pattern PATTERN = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+		private JCheckBox chk_spectate;
 		private JTextField txt_address;
 		private JTextField txt_nickname;
 		private JTextField txt_port;
-		private JLabel lbl_image;
 		private JButton btn_image;
 		private JButton btn_connect;
-		private JCheckBox chk_spectate;
+		private JLabel lbl_image;
+		private JLabel lbl_address;
+		private JLabel lbl_port;
+		private JLabel lbl_nickname;
 		private byte[] image;
-		private JLabel txt_address_prompt;
-		private JLabel txt_port_prompt;
-		private JLabel txt_nickname_prompt;
-	
-		public static void main(String[] args){
+		
+		public static void main(String[] args) {
 				new ConnectFrame();
 		}
 		
-		public ConnectFrame(){
+		public ConnectFrame() {
 			try {
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (Exception ex) {}
@@ -62,6 +62,7 @@
 			setLocationRelativeTo(null);
 			
 			lbl_image = new JLabel("");
+			lbl_image.setBorder(null);
 			lbl_image.setIcon(new ImageIcon(ConnectFrame.class.getResource("/images/avatar.png")));
 			lbl_image.setBounds(10, 11, 64, 64);
 			getContentPane().add(lbl_image);
@@ -79,12 +80,12 @@
 			getContentPane().add(btn_connect);
 			
 			txt_address = new JTextField();
-			txt_address_prompt = new JLabel("IP-Adresse");
-			txt_address_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
-			txt_address_prompt.setForeground(Color.GRAY);
-			txt_address_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			lbl_address = new JLabel("IP-Adresse");
+			lbl_address.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			lbl_address.setForeground(Color.GRAY);
+			lbl_address.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_address.setLayout( new BorderLayout() );
-			txt_address.add(txt_address_prompt);
+			txt_address.add(lbl_address);
 			txt_address.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_address.setBounds(95, 11, 159, 20);
 			txt_address.addKeyListener(this);
@@ -92,12 +93,12 @@
 			getContentPane().add(txt_address);
 			
 			txt_port = new JTextField();
-			txt_port_prompt = new JLabel("Port");
-			txt_port_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
-			txt_port_prompt.setForeground(Color.GRAY);
-			txt_port_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			lbl_port = new JLabel("Port");
+			lbl_port.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			lbl_port.setForeground(Color.GRAY);
+			lbl_port.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_port.setLayout( new BorderLayout() );
-			txt_port.add(txt_port_prompt);
+			txt_port.add(lbl_port);
 			txt_port.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_port.setColumns(10);
 			txt_port.setBounds(264, 11, 74, 20);
@@ -105,12 +106,12 @@
 			getContentPane().add(txt_port);
 			
 			txt_nickname = new JTextField();
-			txt_nickname_prompt = new JLabel("Nickname (max 20 chars)");
-			txt_nickname_prompt.setForeground(Color.GRAY);
-			txt_nickname_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
-			txt_nickname_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			lbl_nickname = new JLabel("Nickname (max 20 chars)");
+			lbl_nickname.setForeground(Color.GRAY);
+			lbl_nickname.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			lbl_nickname.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_nickname.setLayout( new BorderLayout() );
-			txt_nickname.add(txt_nickname_prompt);
+			txt_nickname.add(lbl_nickname);
 			txt_nickname.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_nickname.setColumns(10);
 			txt_nickname.setBounds(95, 42, 159, 20);
@@ -127,7 +128,7 @@
 			sep.setBounds(84, 0, 2, 121);
 			getContentPane().add(sep);
 			
-			JLabel lbl_credits = new JLabel("v 1.0 - made by: Julius, Nico, ...");
+			JLabel lbl_credits = new JLabel("v2.0  -  by: Julius, Nico, ...");
 			lbl_credits.setHorizontalAlignment(SwingConstants.CENTER);
 			lbl_credits.setBounds(95, 98, 243, 23);
 			getContentPane().add(lbl_credits);
@@ -147,17 +148,6 @@
 				changeImage();
 			}else if(e.getSource().equals(btn_connect)){
 				startGame();
-			}
-		}
-
-		private void startGame() {
-			if(txt_address.getText() != null && txt_port.getText() != null && txt_nickname != null){
-							    
-				System.out.println("Adress: " + txt_address.getText() + ":" + txt_port.getText());
-				System.out.println("Nickname: " + txt_nickname.getText());
-				System.out.println("Spectate: " + chk_spectate.isSelected());
-				System.out.println("Image: " + Arrays.toString(image));
-				
 			}
 		}
 
@@ -188,7 +178,7 @@
 		    }
 		}
 
-		private void checkFields(){
+		private void checkFields() {
 			boolean enable = true;
 			if(!PATTERN.matcher(txt_address.getText()).matches()){
 				enable = false;
@@ -210,19 +200,19 @@
 		private void checkForPrompt(JTextField txt) {
 			if (txt.getText().length() > 0) {
 				if(txt.equals(txt_address)){
-					txt_address_prompt.setVisible(false);
+					lbl_address.setVisible(false);
 				}else if(txt.equals(txt_port)){
-					txt_port_prompt.setVisible(false);
+					lbl_port.setVisible(false);
 				}else if(txt.equals(txt_nickname)){
-					txt_nickname_prompt.setVisible(false);
+					lbl_nickname.setVisible(false);
 				}
 			}else{
 				if(txt.equals(txt_address)){
-					txt_address_prompt.setVisible(true);
+					lbl_address.setVisible(true);
 				}else if(txt.equals(txt_port)){
-					txt_port_prompt.setVisible(true);
+					lbl_port.setVisible(true);
 				}else if(txt.equals(txt_nickname)){
-					txt_nickname_prompt.setVisible(true);
+					lbl_nickname.setVisible(true);
 				}
 			}
 		}
@@ -232,11 +222,11 @@
 			if(e.getSource() instanceof JTextField){
 				JTextField txt = (JTextField)e.getSource();
 				if(txt.equals(txt_address)){
-					txt_address_prompt.setVisible(false);
+					lbl_address.setVisible(false);
 				}else if(txt.equals(txt_port)){
-					txt_port_prompt.setVisible(false);
+					lbl_port.setVisible(false);
 				}else if(txt.equals(txt_nickname)){
-					txt_nickname_prompt.setVisible(false);
+					lbl_nickname.setVisible(false);
 				}
 			}
 		}
@@ -249,5 +239,12 @@
 			}
 		}
 
-		@Override public void keyTyped(KeyEvent e) { }
+		@Override public void keyTyped(KeyEvent e) {}
+		
+		private void startGame() {   
+			System.out.println("Adress: " + txt_address.getText() + ":" + txt_port.getText());
+			System.out.println("Nickname: " + txt_nickname.getText());
+			System.out.println("Spectate: " + chk_spectate.isSelected());
+			System.out.println("Image: " + Arrays.toString(image));
+		}
 	}
