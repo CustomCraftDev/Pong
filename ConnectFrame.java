@@ -1,12 +1,16 @@
-	import java.awt.Graphics;
-	import java.awt.Image;
+	import java.awt.BorderLayout;
 	import java.awt.Insets;
 	import java.awt.Rectangle;
 	import java.awt.Toolkit;
 	import java.awt.event.ActionEvent;
 	import java.awt.event.ActionListener;
+	import java.awt.event.KeyEvent;
+	import java.awt.event.KeyListener;
 	import java.awt.image.BufferedImage;
+	import java.io.ByteArrayOutputStream;
 	import java.io.File;
+	import java.util.Arrays;
+	import java.util.regex.Pattern;
 	import javax.imageio.ImageIO;
 	import javax.swing.ImageIcon;
 	import javax.swing.JButton;
@@ -17,12 +21,15 @@
 	import javax.swing.JSeparator;
 	import javax.swing.JTextField;
 	import javax.swing.SwingConstants;
+	import javax.swing.UIManager;
 	import javax.swing.filechooser.FileFilter;
 	import javax.swing.filechooser.FileNameExtensionFilter;
-
+	import java.awt.Color;
+	import java.awt.Font;
 	
 	@SuppressWarnings("serial")
-	public class ConnectFrame extends JFrame implements ActionListener {
+	public class ConnectFrame extends JFrame implements ActionListener, KeyListener {
+		private Pattern PATTERN = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 		private JTextField txt_address;
 		private JTextField txt_nickname;
 		private JTextField txt_port;
@@ -30,12 +37,20 @@
 		private JButton btn_image;
 		private JButton btn_connect;
 		private JCheckBox chk_spectate;
+		private byte[] image;
+		private JLabel txt_address_prompt;
+		private JLabel txt_port_prompt;
+		private JLabel txt_nickname_prompt;
 	
 		public static void main(String[] args){
-			new ConnectFrame();
+				new ConnectFrame();
 		}
 		
 		public ConnectFrame(){
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch (Exception ex) {}
+			
 			setAlwaysOnTop(true);
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setResizable(false);
@@ -58,29 +73,48 @@
 			getContentPane().add(btn_image);
 			
 			btn_connect = new JButton("Connect");
+			btn_connect.setEnabled(false);
 			btn_connect.setBounds(95, 73, 243, 23);
 			btn_connect.addActionListener(this);
 			getContentPane().add(btn_connect);
 			
 			txt_address = new JTextField();
-			new TextPrompt("IP-Adress", txt_address);
+			txt_address_prompt = new JLabel("IP-Adresse");
+			txt_address_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			txt_address_prompt.setForeground(Color.GRAY);
+			txt_address_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			txt_address.setLayout( new BorderLayout() );
+			txt_address.add(txt_address_prompt);
 			txt_address.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_address.setBounds(95, 11, 159, 20);
+			txt_address.addKeyListener(this);
+			txt_address.setColumns(10);	
 			getContentPane().add(txt_address);
-			txt_address.setColumns(10);		
 			
 			txt_port = new JTextField();
-			new TextPrompt("Port", txt_port);
+			txt_port_prompt = new JLabel("Port");
+			txt_port_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			txt_port_prompt.setForeground(Color.GRAY);
+			txt_port_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			txt_port.setLayout( new BorderLayout() );
+			txt_port.add(txt_port_prompt);
 			txt_port.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_port.setColumns(10);
 			txt_port.setBounds(264, 11, 74, 20);
+			txt_port.addKeyListener(this);
 			getContentPane().add(txt_port);
 			
 			txt_nickname = new JTextField();
-			new TextPrompt("Nickname", txt_nickname);
+			txt_nickname_prompt = new JLabel("Nickname (max 20 chars)");
+			txt_nickname_prompt.setForeground(Color.GRAY);
+			txt_nickname_prompt.setFont(new Font("Tahoma", Font.PLAIN, 9));
+			txt_nickname_prompt.setHorizontalAlignment(SwingConstants.CENTER);
+			txt_nickname.setLayout( new BorderLayout() );
+			txt_nickname.add(txt_nickname_prompt);
 			txt_nickname.setHorizontalAlignment(SwingConstants.CENTER);
 			txt_nickname.setColumns(10);
 			txt_nickname.setBounds(95, 42, 159, 20);
+			txt_nickname.addKeyListener(this);
 			getContentPane().add(txt_nickname);
 			
 			chk_spectate = new JCheckBox("Spectate?");
@@ -97,7 +131,13 @@
 			lbl_credits.setHorizontalAlignment(SwingConstants.CENTER);
 			lbl_credits.setBounds(95, 98, 243, 23);
 			getContentPane().add(lbl_credits);
-						
+					
+			BufferedImage bufferedImage = new BufferedImage(64, 64, 1);
+		    bufferedImage.createGraphics().drawImage(((ImageIcon)lbl_image.getIcon()).getImage(), 0, 0, null);
+		    ByteArrayOutputStream out = new ByteArrayOutputStream();
+		    try{ImageIO.write(bufferedImage, "PNG", out);}catch(Exception ex){ex.printStackTrace();}
+		    image = out.toByteArray();
+			
 			setVisible(true);
 		}
 
@@ -112,21 +152,18 @@
 
 		private void startGame() {
 			if(txt_address.getText() != null && txt_port.getText() != null && txt_nickname != null){
-				Image image = ((ImageIcon)lbl_image.getIcon()).getImage();
-				BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 1);
-			    Graphics gc = bufferedImage.createGraphics();
-			    gc.drawImage(image, 0, 0, null);
-				
+							    
 				System.out.println("Adress: " + txt_address.getText() + ":" + txt_port.getText());
 				System.out.println("Nickname: " + txt_nickname.getText());
 				System.out.println("Spectate: " + chk_spectate.isSelected());
-
+				System.out.println("Image: " + Arrays.toString(image));
+				
 			}
 		}
 
 		private void changeImage() {
 		    JFileChooser filechooser= new JFileChooser();
-		    FileFilter imageFilter = new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes());
+		    FileFilter imageFilter = new FileNameExtensionFilter("Image Files (64x64 px)", ImageIO.getReaderFileSuffixes());
 		    filechooser.setFileFilter(imageFilter);
 		    filechooser.setDialogTitle("Choose your new Avatar");
 		    filechooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -138,11 +175,79 @@
 		            bi = ImageIO.read(file);
 		            if(bi.getHeight() == 64 && bi.getWidth() == 64){
 		            	lbl_image.setIcon(new ImageIcon(bi));
+		        
+						BufferedImage bufferedImage = new BufferedImage(64, 64, 1);
+					    bufferedImage.createGraphics().drawImage((new ImageIcon(bi)).getImage(), 0, 0, null);
+					    ByteArrayOutputStream out = new ByteArrayOutputStream();
+					    try{ImageIO.write(bufferedImage, "PNG", out);}catch(Exception ex){ex.printStackTrace();}
+					    image = out.toByteArray();
 		            }
 		        }
-		        catch(Exception e) { }
+		        catch(Exception ex) {}
 		        lbl_image.repaint();
 		    }
 		}
+
+		private void checkFields(){
+			boolean enable = true;
+			if(!PATTERN.matcher(txt_address.getText()).matches()){
+				enable = false;
+			}
+			
+			try{int port = Integer.parseInt(txt_port.getText());
+				if(port < 0 || port > 99999){
+					enable = false;
+				}
+			}catch(Exception ex){enable = false;}
+			
+			if(txt_nickname.getText().length() == 0 || txt_nickname.getText().length() > 20){
+				enable = false;
+			}
+			
+			btn_connect.setEnabled(enable);
+		}
 		
+		private void checkForPrompt(JTextField txt) {
+			if (txt.getText().length() > 0) {
+				if(txt.equals(txt_address)){
+					txt_address_prompt.setVisible(false);
+				}else if(txt.equals(txt_port)){
+					txt_port_prompt.setVisible(false);
+				}else if(txt.equals(txt_nickname)){
+					txt_nickname_prompt.setVisible(false);
+				}
+			}else{
+				if(txt.equals(txt_address)){
+					txt_address_prompt.setVisible(true);
+				}else if(txt.equals(txt_port)){
+					txt_port_prompt.setVisible(true);
+				}else if(txt.equals(txt_nickname)){
+					txt_nickname_prompt.setVisible(true);
+				}
+			}
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if(e.getSource() instanceof JTextField){
+				JTextField txt = (JTextField)e.getSource();
+				if(txt.equals(txt_address)){
+					txt_address_prompt.setVisible(false);
+				}else if(txt.equals(txt_port)){
+					txt_port_prompt.setVisible(false);
+				}else if(txt.equals(txt_nickname)){
+					txt_nickname_prompt.setVisible(false);
+				}
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			checkFields();
+			if(e.getSource() instanceof JTextField){
+				checkForPrompt((JTextField)e.getSource());
+			}
+		}
+
+		@Override public void keyTyped(KeyEvent e) { }
 	}
